@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <nav>
+    <ul>
+      <li><a href="index.html">Home</a></li>
+      <li><a href="admin.html">Admin</a></li>
+      <li><a href="books.html">Books</a></li>
+    </ul>
+  </nav>
+
+  <h2>Login</h2>
+  <form id="loginForm">
+    <label for="email">Email:</label>
+    <input type="email" id="email" required>
+    <br>
+    <label for="password">Password:</label>
+    <input type="password" id="password" required>
+    <br>
+    <button type="submit">Login</button>
+  </form>
+
+  <script>
+    document.getElementById("loginForm").addEventListener("submit", function(e) {
+      e.preventDefault();
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+
+      let loginData = null;
+
+      if (email === "admin@empher.com" && password === "empher@123") {
+        loginData = { email: email, role: "admin" };
+        localStorage.setItem("loginData", JSON.stringify(loginData));
+        alert("Logged in as Admin.");
+        window.location.href = "admin.html";
+      } else if (email === "user@empher.com" && password === "user@123") {
+        loginData = { email: email, role: "user" };
+        localStorage.setItem("loginData", JSON.stringify(loginData));
+        window.location.href = "books.html";
+      } else {
+        alert("Invalid credentials.");
+      }
+    });
+  </script>
+</body>
+</html> 
