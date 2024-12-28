@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Books</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <nav>
+    <ul>
+      <li><a href="index.html">Home</a></li>
+      <li><a href="admin.html">Admin</a></li>
+      <li><a href="books.html">Books</a></li>
+    </ul>
+  </nav>
+
+  <h2>User Books</h2>
+  <div id="userWelcome"></div>
+
+  <button id="showAvailable">Show Available Books</button>
+  <button id="showBorrowed">Show Borrowed Books</button>
+
+  <div id="booksGrid"></div>
+
+  <script>
+    const loginData = JSON.parse(localStorage.getItem("loginData"));
+    if (!loginData || loginData.email !== "user@empher.com") {
+      alert("User Not Logged In.");
+      window.location.href = "index.html";
+    } else {
+      document.getElementById("userWelcome").textContent = `Welcome, ${loginData.email}`;
+    }
+
+    document.getElementById("showAvailable").addEventListener("click", function() {
+      loadBooks(true);
+    });
+
+    document.getElementById("showBorrowed").addEventListener("click", function() {
+      loadBooks(false);
+    });
+
+    function loadBooks(isAvailable) {
+      const url = `https://<your-glitch-url>/books?isAvailable=${isAvailable}`;
+      fetch(url)
+        .then(response => response.json())
+        .then(data => {
+          const booksGrid = document.getElementById("booksGrid");
+          booksGrid.innerHTML = ""; // Clear previous books
+
+          data.forEach(book => {
+            const bookCard = document.createElement("div");
+            bookCard.classList.add("book-card");
+
+            bookCard.innerHTML = `
+              <img src="${book.imageUrl}" alt="${book.title}">
+              <h3>${book.title}</h3>
+              <p>${book.author}</p>
+              <p>${book.category}</p>
+              <p>Availability: ${book.isAvailable ? "Available" : "Not Available"}</p>
+              <p>Borrowed Days: ${book.borrowedDays ? book.borrowedDays : "N/A"}</p>
+            `;
+
+            if (book.isAvailable) {
+              bookCard.innerHTML += `<button onclick="borrowBook(${book.id})">Borrow Book</button>`;
+            } else {
+              bookCard.innerHTML += `<button onclick="returnBook(${book.id})">Return Book</button>`;
+            }
+
+            booksGrid.appendChild(bookCard);
+          });
+        });
+    }
+
+    function borrowBook(bookId) {
+      const days = prompt("Enter borrowing duration (maximum 10 days):");
+      if (days <= 10) {
+        fetch(`https://<your-glitch-url>/books/${bookId}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            isAvailable: false,
+            borrowedDays: days
+          })
+        })
+        .then(response => response.json())
+        .then(() => {
+          alert("Book Borrowed Successfully.");
+          loadBooks(true); // Refresh available books
+        });
+      } else {
+        alert("Max borrowing days are 10.");
+      }
+    }
+
+    function returnBook(bookId) {
+      const confirmation = confirm("Are you sure to return this book?");
+      if (confirmation) {
+        fetch(`https://<your-glitch-url>/books/${bookId}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            isAvailable: true,
+            borrowedDays: null
+          })
+        })
+        .then(response => response.json())
+        .then(() => {
+          alert("Book Returned Successfully.");
+          loadBooks(false); // Refresh borrowed books
+        });
+      }
+    }
+  </script>
+</body>
+</html>
